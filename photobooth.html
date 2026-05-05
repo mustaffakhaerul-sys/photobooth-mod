@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Rics Photobooth iPad</title>
+
+  <style>
+    :root{
+      --bg:#090912;
+      --panel:#1c1b25;
+      --panel2:#252330;
+      --text:#fff;
+      --muted:#b9b4c6;
+      --pink:#ff4f93;
+      --pink2:#ff8fbc;
+      --line:rgba(255,255,255,.14);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#090912}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:radial-gradient(circle at top left,#271726,#090912 55%);
+      color:#fff;
+      overflow:hidden;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+
+    .app{
+      width:100vw;
+      height:100dvh;
+      display:grid;
+      place-items:center;
+      padding:0;
+      overflow:hidden;
+    }
+
+    .screen{
+      display:none;
+      width:1024px;
+      height:1300px;
+      max-width:100vw;
+      max-height:100dvh;
+      background:rgba(10,10,20,.78);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:34px;
+      padding:24px;
+      overflow:hidden;
+      box-shadow:0 30px 90px rgba(0,0,0,.42);
+    }
+    .screen.active{display:flex;flex-direction:column}
+
+    .top{
+      display:grid;
+      grid-template-columns:96px 1fr 96px;
+      gap:14px;
+      align-items:start;
+      margin-bottom:18px;
+      flex:0 0 auto;
+    }
+    .top .title{text-align:center}
+
+    .back,.icon-btn{
+      border:1px solid rgba(255,255,255,.35);
+      background:rgba(255,255,255,.04);
+      color:white;
+      border-radius:999px;
+      padding:11px 15px;
+      font-weight:900;
+      font-size:15px;
+    }
+    .icon-btn{justify-self:end}
+
+    h1,h2{margin:0;letter-spacing:-.05em}
+    h1{font-size:72px;text-align:center}
+    h2{font-size:36px}
+    h3{margin:0 0 12px}
+    p{margin:8px 0 0;color:var(--muted);font-size:16px}
+
+    .btn{
+      border:0;
+      border-radius:999px;
+      background:var(--pink);
+      color:white;
+      padding:16px 24px;
+      font-weight:950;
+      font-size:19px;
+      box-shadow:0 14px 38px rgba(255,79,147,.36);
+    }
+    .btn.secondary{
+      background:#282633;
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+
+    .hero{
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      gap:28px;
+      position:relative;
+      overflow:hidden;
+    }
+    .hero p{font-size:24px}
+
+    .home-media{
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center;
+      opacity:.62;
+      z-index:0;
+    }
+    .home-media video{width:100%;height:100%;object-fit:cover;transform:none}
+
+    .home-content{position:absolute;inset:0;z-index:1}
+    .home-content h1,.home-content p,.home-content button{
+      position:absolute;
+      transform:translate(-50%,-50%);
+      margin:0;
+      white-space:nowrap;
+    }
+    .home-content button{
+      border:0;
+      border-radius:999px;
+      padding:15px 22px;
+      color:white;
+      font-weight:950;
+    }
+
+    .center{flex:1;display:grid;place-items:center;min-height:0}
+    .bottom-action{margin-top:auto;padding-top:14px;display:grid;gap:12px;flex:0 0 auto}
+    .two-actions{grid-template-columns:1fr 1fr}
+    .template-actions{grid-template-columns:1fr 1fr 1fr}
+
+    .count-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      width:100%;
+      max-width:650px;
+    }
+    .count-card{
+      height:140px;
+      border:1px solid var(--line);
+      border-radius:26px;
+      background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.05));
+      color:white;
+      font-weight:900;
+      display:grid;
+      place-items:center;
+    }
+    .count-card b{display:block;font-size:62px;line-height:.9}
+    .count-card.selected{background:var(--pink);box-shadow:0 14px 34px rgba(255,79,147,.35)}
+    .camera-cute{font-size:80px;text-align:center;margin-top:40px;filter:drop-shadow(0 10px 28px rgba(255,79,147,.28))}
+
+    .template-toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:18px;flex:0 0 auto}
+    .template-grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding-right:4px;align-content:start;min-height:0}
+    .template-card{background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.05));border:1px solid var(--line);border-radius:22px;padding:10px;display:grid;gap:8px;box-shadow:0 14px 36px rgba(0,0,0,.2);position:relative}
+    .template-thumb{height:170px;border-radius:16px;background:var(--frame-bg);border:2px solid var(--outer-border);position:relative;overflow:hidden;background-size:cover;background-position:center}
+    .template-thumb .thumb-slot{position:absolute;background:#d9d9d9;border:var(--photo-border) solid var(--frame-border);border-radius:var(--photo-radius);transform:rotate(var(--rot));box-shadow:0 6px 18px rgba(0,0,0,.18)}
+    .template-thumb .thumb-overlay{position:absolute;inset:0;background-image:var(--frame-img);background-size:cover;background-position:center;z-index:3}
+    .template-thumb .thumb-title{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:var(--text-color);font-weight:950;font-style:italic;z-index:4;font-size:12px}
+    .template-card h3{margin:0;font-size:14px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .template-meta{color:var(--muted);font-size:11px;margin:0}
+    .template-menu-btn{position:absolute;top:10px;right:10px;z-index:8;width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.46);color:white;font-weight:950}
+    .template-dropdown{position:absolute;top:48px;right:10px;background:#252330;border:1px solid var(--line);border-radius:14px;padding:6px;display:none;z-index:10;box-shadow:0 18px 40px rgba(0,0,0,.38);min-width:110px}
+    .template-dropdown.open{display:grid}
+    .template-dropdown button{border:0;background:transparent;color:white;text-align:left;padding:10px 12px;border-radius:10px;font-weight:850}
+    .template-dropdown button:hover{background:rgba(255,255,255,.09)}
+    .template-pagination{display:flex;gap:8px;justify-content:center;align-items:center;padding-top:12px;flex:0 0 auto}
+    .page-btn{border:1px solid var(--line);background:#282633;color:white;border-radius:12px;padding:9px 13px;font-weight:900}
+    .page-btn.active{background:var(--pink);border-color:var(--pink)}
+    .empty-template{grid-column:1/-1;text-align:center;padding:70px 30px;background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.22);border-radius:30px}
+    .empty-template h3{font-size:30px;margin:0 0 10px}
+
+    .style-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+      align-content:start;
+      position:relative;
+      z-index:5;
+      flex:0 0 auto;
+    }
+    .style-card{
+      border:0;
+      background:transparent;
+      color:white;
+      font-weight:850;
+      text-align:left;
+      font-size:16px;
+      padding:0;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+      user-select:none;
+      position:relative;
+      z-index:20;
+      pointer-events:auto;
+      cursor:pointer;
+    }
+    .style-card *{pointer-events:none}
+    .style-preview{
+      height:210px;
+      border-radius:22px;
+      overflow:hidden;
+      border:4px solid rgba(255,255,255,.18);
+      background:#ddd;
+      position:relative;
+    }
+    .style-preview.selected{border-color:var(--pink)!important;box-shadow:0 0 0 5px rgba(255,79,147,.28)!important}
+    .style-preview img{width:100%;height:100%;object-fit:cover;object-position:center top}
+    .style-name{
+      position:absolute;
+      bottom:0;
+      left:0;
+      right:0;
+      background:linear-gradient(transparent,rgba(0,0,0,.82));
+      padding:48px 16px 14px;
+      font-size:17px;
+      font-weight:950;
+      text-align:center;
+    }
+    .style-pick-btn{width:100%;margin-top:10px;border:0;border-radius:999px;background:#2b2935;color:white;padding:12px;font-weight:950;font-size:15px;pointer-events:auto!important}
+    .style-card.active .style-pick-btn{background:var(--pink);box-shadow:0 10px 28px rgba(255,79,147,.32)}
+    .selected-style-info{text-align:center;background:rgba(255,79,147,.12);border:1px solid rgba(255,79,147,.35);border-radius:999px;padding:12px 18px;margin-bottom:14px;font-weight:900;color:#fff;flex:0 0 auto}
+
+    .custom-wrap{
+      flex:1;
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:22px;
+      min-height:0;
+    }
+    .big-4r{
+      width:340px;
+      height:510px;
+      margin:0 auto;
+      background:var(--frame-bg);
+      border-radius:26px;
+      padding:0;
+      position:relative;
+      overflow:hidden;
+      border:3px solid var(--outer-border);
+      box-shadow:0 18px 52px rgba(0,0,0,.4);
+    }
+    .frame-base-bg{position:absolute;inset:0;background:var(--frame-bg);z-index:0}
+    .frame-overlay{position:absolute;inset:0;background-image:var(--frame-img);background-size:cover;background-position:center;z-index:3;pointer-events:none}
+    .big-slots{position:absolute;inset:0;z-index:2}
+    .big-slot{position:absolute;background:#d4d4d4;border:var(--photo-border) solid var(--frame-border);border-radius:var(--photo-radius);box-shadow:0 0 0 2px rgba(255,255,255,.55),0 9px 28px rgba(0,0,0,.2);cursor:move;touch-action:none;resize:none;overflow:visible;min-width:52px;min-height:70px;transform:rotate(var(--rot,0deg));transform-origin:center}
+    .big-slot.active{box-shadow:0 0 0 4px var(--pink),0 12px 34px rgba(255,79,147,.3)}
+    .resize-handle{position:absolute;right:0;bottom:0;width:34px;height:34px;border-radius:12px 0 0 0;background:rgba(255,79,147,.92);border-left:3px solid white;border-top:3px solid white;z-index:5;touch-action:none}
+    .resize-handle::after{content:"↘";position:absolute;right:7px;bottom:4px;color:white;font-weight:950;font-size:16px}
+    .big-slot .rot-handle{position:absolute;left:50%;top:-28px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:var(--pink);border:3px solid white;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+    .big-title{position:absolute;left:0;right:0;bottom:28px;text-align:center;color:var(--text-color);font-weight:950;font-size:30px;font-style:italic;z-index:4;pointer-events:none}
+
+    .panel{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:18px;overflow:auto;min-height:0}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:16px}
+    .tab{border:0;background:transparent;color:white;padding:15px;font-weight:900}
+    .tab.active{background:var(--pink)}
+    label{display:grid;gap:7px;margin-bottom:13px;color:#d7d2e2;font-size:15px;font-weight:850}
+    input[type=text],select{width:100%;background:#111723;border:1px solid #333747;color:white;border-radius:12px;padding:13px;font-weight:800}
+    input[type=color]{width:100%;height:38px}
+    .range-row{display:grid;grid-template-columns:1fr 54px;gap:10px;align-items:center}
+    .range-row span{text-align:right;font-weight:900}
+    .upload-box{border:2px dashed rgba(255,255,255,.25);border-radius:18px;min-height:140px;display:grid;place-items:center;text-align:center;padding:16px}
+    .upload-box input{display:none}
+    .upload-icon{font-size:38px;display:block}
+
+    .home-settings-preview{height:520px;border-radius:24px;border:1px solid var(--line);background:rgba(255,255,255,.06);position:relative;background-size:cover;background-position:center;overflow:hidden}
+    .home-settings-preview video{width:100%;height:100%;object-fit:cover;transform:none}
+    .home-editor{flex:1;min-height:0;display:grid;grid-template-columns:360px 1fr;gap:22px}
+    .home-form{max-height:100%}
+    .home-edit-item{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);z-index:2;cursor:move;touch-action:none;text-align:center;user-select:none}
+    .home-edit-item.active{outline:2px dashed var(--pink);outline-offset:6px}
+    .preview-start-btn{border:0;border-radius:999px;padding:14px 22px;background:var(--pink);color:white;font-weight:950}
+
+    .camera-box{position:relative;flex:1;border-radius:24px;background:#222;overflow:hidden;min-height:520px}
+    video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+    .countdown{position:absolute;inset:0;display:none;place-items:center;background:rgba(0,0,0,.38);font-size:150px;font-weight:950}
+    .countdown.active{display:grid}
+    .shoot-btn{width:110px;height:110px;border-radius:999px;border:10px solid white;background:var(--pink);margin:16px auto 0;box-shadow:0 12px 35px rgba(255,79,147,.36);flex:0 0 auto}
+    .thumbs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px;flex:0 0 auto}
+    .thumbs img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px}
+
+    .result-grid{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:24px;min-height:0;align-items:center}
+    .result-polished{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:28px;padding:22px}
+    .result-preview{display:grid;place-items:center;min-height:0;height:100%}
+    #resultCanvas{width:auto;height:auto;max-width:100%;max-height:720px;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.52);background:white}
+    .qr-box{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:26px;padding:20px;text-align:center;align-self:center;box-shadow:0 18px 48px rgba(0,0,0,.28)}
+    .qr-box h3{margin:0 0 12px;font-size:20px}
+    .qr-box img{width:210px;height:210px;background:white;border-radius:18px;padding:12px}
+    .result-actions{display:grid;gap:12px;margin-top:16px}
+
+    .settings-grid{display:grid;gap:18px}
+    .setting-card{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:24px;padding:20px}
+
+    .filter-soft{filter:brightness(1.2) contrast(.88) saturate(1.08)}
+    .filter-bw{filter:grayscale(100%) contrast(1.35) brightness(1.04)}
+    .filter-retro{filter:sepia(55%) contrast(1.22) saturate(1.45) brightness(1.04)}
+    .filter-cold{filter:contrast(1.15) saturate(1.08) hue-rotate(190deg) brightness(1.04)}
+
+    @media(max-width:700px){
+      .app{padding:0}
+      .screen{width:100%;height:100dvh;border-radius:0;padding:18px}
+      .custom-wrap,.result-grid,.home-editor{grid-template-columns:1fr}
+      .style-preview{height:170px}
+      .style-grid{gap:14px}
+      .big-4r{width:300px;height:450px}
+      .template-grid{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+
+<body>
+<main class="app">
+  <section id="standby" class="screen hero active">
+    <div id="homeMedia" class="home-media"></div>
+    <div class="home-content">
+      <h1 id="homeTitle">Rics Photobooth</h1>
+      <p id="homeSubtitle">Korean style photobooth for iPad</p>
+      <button id="homeStartBtn" class="btn" onclick="goTo('homeSettings')">Start →</button>
+    </div>
+  </section>
+
+  <section id="homeSettings" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('standby')">← Back</button>
+      <div class="title"><h2>Setting Beranda</h2><p>Atur tampilan awal photobooth</p></div>
+      <button class="icon-btn" onclick="goTo('settings')">Next →</button>
+    </div>
+    <div class="home-editor">
+      <div id="homeSettingsPreview" class="home-settings-preview">
+        <div id="homePreviewMedia" class="home-media"></div>
+        <div class="home-edit-item" data-home-item="title" id="previewHomeTitle">Rics Photobooth</div>
+        <div class="home-edit-item" data-home-item="subtitle" id="previewHomeSubtitle">Korean style photobooth for iPad</div>
+        <button class="home-edit-item preview-start-btn" data-home-item="button" id="previewHomeButton">Start →</button>
+      </div>
+      <div class="panel home-form">
+        <div class="tabs">
+          <button id="homeTabText" class="tab active" onclick="setHomeTab('text')">Text</button>
+          <button id="homeTabMedia" class="tab" onclick="setHomeTab('media')">Media</button>
+        </div>
+        <div id="homeTextEditor">
+          <label>Nama Aplikasi<input id="homeTitleInput" type="text" oninput="updateHomeText()"></label>
+          <label>Subtitle<input id="homeSubtitleInput" type="text" oninput="updateHomeText()"></label>
+          <label>Jenis Font
+            <select id="homeFontInput" onchange="updateHomeText()">
+              <option value="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">System / iOS</option>
+              <option value="Georgia, serif">Elegant Serif</option>
+              <option value="Times New Roman, serif">Classic Serif</option>
+              <option value="Arial, sans-serif">Clean Sans</option>
+              <option value="Verdana, sans-serif">Rounded Sans</option>
+              <option value="Courier New, monospace">Mono</option>
+            </select>
+          </label>
+          <label>Warna Judul<input id="homeTitleColorInput" type="color" oninput="updateHomeText()"></label>
+          <label>Warna Subtitle<input id="homeSubtitleColorInput" type="color" oninput="updateHomeText()"></label>
+          <label>Warna Tombol Start<input id="homeButtonColorInput" type="color" oninput="updateHomeText()"></label>
+          <label>Ukuran Judul<div class="range-row"><input id="homeTitleSizeInput" type="range" min="28" max="90" oninput="updateHomeText()"><span id="homeTitleSizeValue">54px</span></div></label>
+          <label>Ukuran Subtitle<div class="range-row"><input id="homeSubtitleSizeInput" type="range" min="10" max="36" oninput="updateHomeText()"><span id="homeSubtitleSizeValue">17px</span></div></label>
+          <label>Ukuran Tombol<div class="range-row"><input id="homeButtonSizeInput" type="range" min="12" max="32" oninput="updateHomeText()"><span id="homeButtonSizeValue">18px</span></div></label>
+          <p style="font-size:13px;margin:0">Drag judul, subtitle, atau tombol Start langsung di preview.</p>
+        </div>
+        <div id="homeMediaEditor" style="display:none">
+          <label>Upload Image Background<input type="file" accept="image/png,image/jpeg" onchange="handleHomeImage(event)"></label>
+          <label>Upload Video Background<input type="file" accept="video/mp4,video/webm" onchange="handleHomeVideo(event)"></label>
+          <button class="btn secondary" onclick="clearHomeMedia()">Hapus Background</button>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-action"><button class="btn" onclick="goTo('settings')">Next: Setting Printer →</button></div>
+  </section>
+
+  <section id="settings" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('homeSettings')">← Back</button>
+      <div class="title"><h2>Settings Printer</h2><p>Setup print untuk booth iPad</p></div>
+      <button class="icon-btn" onclick="goTo('templateGallery')">Next →</button>
+    </div>
+    <div class="settings-grid">
+      <div class="setting-card">
+        <h2>Printer Mode</h2>
+        <p>Pilih cara print. Di iPad paling aman pakai AirPrint/browser print.</p><br>
+        <label>Mode Print
+          <select id="printerMode">
+            <option value="airprint">AirPrint / Browser Print</option>
+            <option value="network">Network Printer URL</option>
+            <option value="manual">Download Only</option>
+          </select>
+        </label>
+        <label>Printer Name / IP / URL<input id="printerTarget" type="text" placeholder="Contoh: Epson L8050 / AirPrint"></label>
+        <label>Print Server Laptop<input id="printServerUrl" type="text" value="http://192.168.100.221:3000/print" placeholder="http://192.168.100.221:3000/print"></label>
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:12px 14px">
+          <span>Auto Print L8050 setelah foto selesai</span>
+          <input id="autoPrintEnabled" type="checkbox" style="width:26px;height:26px">
+        </label>
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:12px 14px">
+          <span>QR ikut saat print manual</span>
+          <input id="printQrEnabled" type="checkbox" checked style="width:26px;height:26px">
+        </label>
+        <button class="btn" onclick="savePrinterSettings()">Simpan Setting</button>
+      </div>
+      <div class="setting-card">
+        <h2>Status</h2>
+        <p id="printerStatus">Belum ada printer tersimpan.</p><br>
+        <button class="btn secondary" onclick="testPrint()">Test Print Dialog</button>
+      </div>
+    </div>
+    <div class="bottom-action"><button class="btn" onclick="goTo('templateGallery')">Next: Template Gallery →</button></div>
+  </section>
+
+  <section id="templateGallery" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('settings')">← Back</button>
+      <div class="title"><h2>Template Gallery</h2><p>Pakai template frame yang sudah disimpan</p></div>
+      <button class="icon-btn" onclick="goTo('standby')">⌂</button>
+    </div>
+    <div class="template-toolbar">
+      <button class="btn" onclick="goTo('selectCount')">+ Buat Template Baru</button>
+      <button class="btn secondary" onclick="importTemplates()">Import</button>
+      <button class="btn secondary" onclick="exportTemplates()">Export</button>
+      <input id="templateImportInput" type="file" accept="application/json" style="display:none" onchange="handleTemplateImport(event)">
+    </div>
+    <div id="templateGrid" class="template-grid compact"></div>
+    <div id="templatePagination" class="template-pagination"></div>
+  </section>
+
+  <section id="selectCount" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('templateGallery')">← Back</button>
+      <div class="title"><h2>Pilih Jumlah Foto</h2><p>Pilih preset 1/2/3/4/6 atau pakai Custom Collage</p></div>
+      <button class="icon-btn" onclick="goTo('standby')">⌂</button>
+    </div>
+    <div class="center"><div style="width:100%"><div id="countGrid" class="count-grid"></div><div class="camera-cute">📸💕</div></div></div>
+  </section>
+
+  <section id="customFrame" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('selectCount')">← Back</button>
+      <div class="title"><h2>Custom Frame</h2><p>Foto otomatis berada di bawah overlay frame Canva</p></div>
+      <button class="icon-btn" onclick="goTo('standby')">⌂</button>
+    </div>
+    <div class="custom-wrap">
+      <div id="frameCustomPreview" class="big-4r">
+        <div class="frame-base-bg"></div>
+        <div id="previewSlots" class="big-slots"></div>
+        <div id="frameOverlayPreview" class="frame-overlay"></div>
+        <div id="previewFrameText" class="big-title">Happy Day</div>
+      </div>
+      <div class="panel">
+        <div class="tabs">
+          <button id="tabManual" class="tab active" onclick="setEditorTab('manual')">Edit Manual</button>
+          <button id="tabUpload" class="tab" onclick="setEditorTab('upload')">Upload Frame</button>
+        </div>
+        <div id="manualEditor">
+          <label>Background <input type="color" id="bgColor" value="#fff5f8" oninput="updateFrameCustom()"></label>
+          <label>Border Foto <input type="color" id="borderColor" value="#ff86b8" oninput="updateFrameCustom()"></label>
+          <label>Warna Border Luar <input type="color" id="outerBorderColor" value="#ffc0cb" oninput="updateFrameCustom()"></label>
+          <label>Nama Event / Brand <input type="text" id="frameText" value="Happy Day" placeholder="Kosongkan jika tidak ingin teks" oninput="updateFrameCustom()"></label>
+          <label>Warna Teks <input type="color" id="textColor" value="#ff4f93" oninput="updateFrameCustom()"></label>
+          <label>Padding <div class="range-row"><input type="range" id="framePadding" min="20" max="90" value="40" oninput="resetSlotsAndUpdate()"><span id="padValue">40px</span></div></label>
+          <label>Gap Foto <div class="range-row"><input type="range" id="frameGap" min="8" max="40" value="20" oninput="resetSlotsAndUpdate()"><span id="gapValue">20px</span></div></label>
+          <label>Radius Foto <div class="range-row"><input type="range" id="photoRadius" min="0" max="32" value="16" oninput="updateFrameCustom()"><span id="radiusValue">16px</span></div></label>
+          <label>Ketebalan Border Foto <div class="range-row"><input type="range" id="photoBorder" min="0" max="18" value="6" oninput="updateFrameCustom()"><span id="borderValue">6px</span></div></label>
+          <label>Rotate Card Aktif <div class="range-row"><input type="range" id="slotRotate" min="-35" max="35" value="0" oninput="rotateSelectedSlot()"><span id="rotateValue">0°</span></div></label>
+          <label>Beauty AI-lite / Smooth Skin <div class="range-row"><input type="range" id="beautyLevel" min="0" max="3" value="1" oninput="updateBeautyLevel()"><span id="beautyValue">1</span></div></label>
+          <p style="font-size:13px;margin:0 0 12px">Tap card foto dulu, lalu drag/resize/rotate. Upload PNG transparan dari Canva supaya frame tetap di atas foto.</p>
+        </div>
+        <div id="uploadEditor" style="display:none">
+          <label class="upload-box"><input type="file" accept="image/png,image/jpeg" onchange="handleFrameUpload(event)"><span><span class="upload-icon">⇧</span><b>Klik upload frame</b><br><small>PNG transparan Canva 2400x3600 disarankan</small></span></label>
+          <button class="btn secondary" onclick="removeUploadedFrame()">Hapus Frame Upload</button>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-action template-actions"><button class="btn secondary" onclick="goTo('standby')">Beranda</button><button class="btn secondary" onclick="saveTemplate()">💾 Save Template</button><button class="btn" onclick="goTo('selectStyle')">Shoot →</button></div>
+  </section>
+
+  <section id="selectStyle" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('customFrame')">← Back</button>
+      <div class="title"><h2>Pilih Style</h2><p>Pilih filter style favoritmu</p></div>
+      <button class="icon-btn" onclick="goTo('standby')">⌂</button>
+    </div>
+    <div id="selectedStyleInfo" class="selected-style-info">Style terpilih: Soft</div>
+    <div id="styleGrid" class="style-grid"></div>
+    <div class="bottom-action"><button class="btn" onclick="goTo('camera')">Mulai Foto →</button></div>
+  </section>
+
+  <section id="camera" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('selectStyle')">← Back</button>
+      <div class="title"><h2 id="cameraTitle">Ambil Foto</h2><p id="captureInfo">Bersiap, foto akan diambil</p></div>
+      <button class="icon-btn" onclick="goTo('standby')">⌂</button>
+    </div>
+    <button class="btn secondary" style="margin-bottom:12px" onclick="restartCamera()">Restart Kamera</button>
+    <div class="camera-box"><video id="video" autoplay playsinline muted></video><div id="countdown" class="countdown">3</div></div>
+    <button class="shoot-btn" onclick="startCaptureSequence()"></button>
+    <div id="thumbs" class="thumbs"></div>
+  </section>
+
+  <section id="result" class="screen">
+    <div class="top">
+      <button class="back" onclick="goTo('standby')">⌂ Beranda</button>
+      <div class="title"><h2>Hasil Foto</h2><p>Download HD, scan QR, atau print</p></div>
+      <button class="icon-btn" onclick="goTo('settings')">⚙</button>
+    </div>
+    <div class="result-grid result-polished">
+      <div class="result-preview"><canvas id="resultCanvas" width="2400" height="3600"></canvas></div>
+      <aside class="qr-box">
+        <h3>QR Download</h3><img id="qrImage" alt="QR Download"><p>Scan untuk membuka hasil foto.</p>
+        <div class="result-actions"><button class="btn" onclick="downloadResult()">Download HD</button><button class="btn secondary" onclick="printResult()">Print</button><button class="btn secondary" onclick="goTo('camera')">Kembali Shoot</button><button class="btn secondary" onclick="goTo('standby')">Beranda</button></div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<script>
+const EXPORT={baseW:1200,baseH:1800,scale:2,width:2400,height:3600};
+const TEMPLATE_PAGE_SIZE=8;
+let templatePage=1;
+
+const state={step:'standby',lastStep:'standby',photoCount:6,layoutMode:'normal',selectedFrameId:'korean-pastel',frameConfig:null,selectedStyle:'soft',capturedPhotos:[],stream:null,customSlots:{},selectedSlotIndex:0,beautyLevel:1,resultUrl:null,homeMedia:null,homeText:{title:'Rics Photobooth',subtitle:'Korean style photobooth for iPad',titleColor:'#ffffff',subtitleColor:'#d8d8e8',buttonColor:'#ff4f93',fontFamily:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',titleSize:54,subtitleSize:17,buttonSize:18,titleX:50,titleY:43,subtitleX:50,subtitleY:51,buttonX:50,buttonY:59},activeHomeItem:'title',printer:{mode:'airprint',target:''}};
+const photoCounts=[1,2,3,4,6];
+
+const stylePhotos={
+  soft:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&q=80',
+  bw:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80',
+  retro:'https://images.unsplash.com/photo-1502767089025-6572583495b4?w=800&q=80',
+  cold:'https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=800&q=80'
+};
+
+const frames=[
+  {id:'korean-pastel',name:'Korean Pastel',backgroundColor:'#fff5f8',borderColor:'#ff86b8',outerBorderColor:'#ffc0cb',textColor:'#ff4f93',text:'Happy Day',padding:40,gap:20,photoRadius:16,photoBorder:6,uploadedFrame:null},
+  {id:'classic-white',name:'Classic White',backgroundColor:'#fff',borderColor:'#eee',outerBorderColor:'transparent',textColor:'#111',text:'Rics',padding:44,gap:18,photoRadius:12,photoBorder:6,uploadedFrame:null},
+  {id:'wedding-gold',name:'Wedding Gold',backgroundColor:'#fffaf0',borderColor:'#d8b76a',outerBorderColor:'#c49a35',textColor:'#b68622',text:'Our Moment',padding:44,gap:18,photoRadius:12,photoBorder:6,uploadedFrame:null}
+];
+const styles=[
+  {id:'soft',name:'Soft Bright',css:'filter-soft',canvas:'brightness(1.2) contrast(.88) saturate(1.08)'},
+  {id:'bw',name:'Black & White',css:'filter-bw',canvas:'grayscale(1) contrast(1.35) brightness(1.04)'},
+  {id:'retro',name:'Retro Film',css:'filter-retro',canvas:'sepia(.55) contrast(1.22) saturate(1.45) brightness(1.04)'},
+  {id:'cold',name:'Cool Blue',css:'filter-cold',canvas:'contrast(1.15) saturate(1.08) hue-rotate(190deg) brightness(1.04)'}
+];
+
+function goTo(id){if(id!=='settings')state.lastStep=state.step;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');state.step=id;if(id==='camera')startCamera();if(id==='customFrame')renderPreviewSlots();if(id==='settings')loadPrinterSettings();if(id==='templateGallery')renderTemplateGallery();if(id==='selectStyle')renderStyles();}
+function renderCounts(){countGrid.innerHTML=photoCounts.map(c=>`<button class="count-card ${state.photoCount===c&&state.layoutMode==='normal'?'selected':''}" onclick="selectPhotoCount(${c})"><span><b>${c}</b>Foto</span></button>`).join('')+`<button class="count-card ${state.layoutMode==='customCollage'?'selected':''}" onclick="selectCustomCollage()"><span><b>+</b>Custom</span></button>`}
+function selectPhotoCount(c){state.layoutMode='normal';state.photoCount=c;delete state.customSlots[String(c)];renderCounts();goTo('customFrame')}
+function selectCustomCollage(){const input=prompt('Masukkan jumlah foto custom, contoh 9 / 12 / 16 / 25','25');const count=parseInt(input,10);if(!count||count<1){alert('Jumlah foto tidak valid');return}if(count>30){alert('Untuk iPad, maksimal disarankan 30 foto.');return}state.layoutMode='customCollage';state.photoCount=count;delete state.customSlots[String(count)];state.selectedSlotIndex=0;renderCounts();goTo('customFrame')}
+function selectFrame(id){const f=frames.find(x=>x.id===id)||frames[0];state.selectedFrameId=id;state.frameConfig=structuredClone(f);syncFrameForm()}
+function syncFrameForm(){const f=state.frameConfig;if(!f||!window.bgColor)return;bgColor.value=f.backgroundColor;borderColor.value=f.borderColor;outerBorderColor.value=f.outerBorderColor||'#ffc0cb';frameText.value=f.text;textColor.value=f.textColor||'#ff4f93';framePadding.value=f.padding;frameGap.value=f.gap;photoRadius.value=f.photoRadius||16;photoBorder.value=f.photoBorder||6;beautyLevel.value=state.beautyLevel;updateFrameCustom();updateBeautyLevel()}
+function resetSlotsAndUpdate(){delete state.customSlots[String(state.photoCount)];updateFrameCustom()}
+function updateFrameCustom(){if(!state.frameConfig)return;const f=state.frameConfig;f.backgroundColor=bgColor.value;f.borderColor=borderColor.value;f.outerBorderColor=outerBorderColor.value;f.text=frameText.value;f.textColor=textColor.value;f.padding=+framePadding.value;f.gap=+frameGap.value;f.photoRadius=+photoRadius.value;f.photoBorder=+photoBorder.value;padValue.textContent=f.padding+'px';gapValue.textContent=f.gap+'px';radiusValue.textContent=f.photoRadius+'px';borderValue.textContent=f.photoBorder+'px';applyPreviewStyle()}
+function updateBeautyLevel(){state.beautyLevel=+beautyLevel.value;beautyValue.textContent=state.beautyLevel}
+function applyPreviewStyle(){const f=state.frameConfig;frameCustomPreview.style.setProperty('--frame-bg',f.backgroundColor);frameCustomPreview.style.setProperty('--frame-border',f.borderColor);frameCustomPreview.style.setProperty('--outer-border',f.outerBorderColor);frameCustomPreview.style.setProperty('--text-color',f.textColor);frameCustomPreview.style.setProperty('--photo-radius',f.photoRadius+'px');frameCustomPreview.style.setProperty('--photo-border',f.photoBorder+'px');frameCustomPreview.style.setProperty('--frame-img',f.uploadedFrame?`url(${f.uploadedFrame})`:'none');previewFrameText.textContent=(f.text||'').trim();previewFrameText.style.display=(f.text||'').trim()?'block':'none';renderPreviewSlots()}
+function getPreviewSlotData(count){const key=String(count);if(state.customSlots[key])return state.customSlots[key];if(state.layoutMode==='customCollage'){const slots=getCustomCollageSlots(count);state.customSlots[key]=slots;return slots}const f=state.frameConfig||{padding:40,gap:20};const pad=f.padding/12;let base;if(count===1)base=[{x:pad,y:pad,w:100-pad*2,h:76,r:0}];else if(count===2)base=[{x:pad,y:pad,w:100-pad*2,h:38,r:0},{x:pad,y:50,w:100-pad*2,h:38,r:0}];else if(count===3)base=[{x:pad,y:pad,w:100-pad*2,h:42,r:0},{x:pad,y:52,w:45-pad,h:34,r:0},{x:52,y:52,w:45-pad,h:34,r:0}];else if(count===4)base=[{x:pad,y:pad,w:42,h:34,r:0},{x:53,y:pad,w:42,h:34,r:0},{x:pad,y:46,w:42,h:34,r:0},{x:53,y:46,w:42,h:34,r:0}];else base=[{x:pad,y:pad,w:42,h:25,r:0},{x:53,y:pad,w:42,h:25,r:0},{x:pad,y:35,w:42,h:25,r:0},{x:53,y:35,w:42,h:25,r:0},{x:pad,y:65,w:42,h:25,r:0},{x:53,y:65,w:42,h:25,r:0}];state.customSlots[key]=base;return base}
+function getCustomCollageSlots(count){const slots=[];const bigW=46,bigH=34,bigX=(100-bigW)/2,bigY=(100-bigH)/2;slots.push({x:bigX,y:bigY,w:bigW,h:bigH,r:0});const gap=2;let cols=count<=12?4:5;if(count>=24)cols=6;const smallW=(100-gap*(cols+1))/cols;const smallH=count<=12?16:count<=20?13:10.8;let added=1;for(let y=4;y<94&&added<count;y+=smallH+gap){for(let c=0;c<cols&&added<count;c++){const x=gap+c*(smallW+gap);const overlap=x<bigX+bigW&&x+smallW>bigX&&y<bigY+bigH&&y+smallH>bigY;if(overlap)continue;slots.push({x,y,w:smallW,h:smallH,r:0});added++}}let safety=0;while(added<count&&safety<100){const row=Math.floor(safety/cols);const col=safety%cols;const x=gap+col*(smallW+gap);const y=4+row*(smallH+gap);if(y+smallH<96){slots.push({x,y,w:smallW,h:smallH,r:0});added++}safety++}return slots}
+function renderPreviewSlots(){if(!state.frameConfig)return;const slots=getPreviewSlotData(state.photoCount);previewSlots.innerHTML=slots.map((s,i)=>`<div class="big-slot ${state.selectedSlotIndex===i?'active':''}" data-index="${i}" style="left:${s.x}%;top:${s.y}%;width:${s.w}%;height:${s.h}%;--rot:${s.r||0}deg"><span class="rot-handle" data-action="rotate"></span><span class="resize-handle" data-action="resize"></span></div>`).join('');enableSlotDragging();syncRotateControl()}
+function enableSlotDragging(){document.querySelectorAll('.big-slot').forEach(el=>{el.onpointerdown=ev=>{ev.preventDefault();const action=ev.target.dataset.action||'move';state.selectedSlotIndex=+el.dataset.index;document.querySelectorAll('.big-slot').forEach(x=>x.classList.remove('active'));el.classList.add('active');syncRotateControl();const rect=frameCustomPreview.getBoundingClientRect();const i=+el.dataset.index;const slots=getPreviewSlotData(state.photoCount);const start={cx:ev.clientX,cy:ev.clientY,...slots[i]};el.setPointerCapture(ev.pointerId);el.onpointermove=mv=>{const dx=(mv.clientX-start.cx)/rect.width*100;const dy=(mv.clientY-start.cy)/rect.height*100;if(action==='resize'){slots[i].w=Math.max(8,Math.min(100-start.x,start.w+dx));slots[i].h=Math.max(8,Math.min(100-start.y,start.h+dy));el.style.width=slots[i].w+'%';el.style.height=slots[i].h+'%';return}if(action==='rotate'){const cx=rect.left+(slots[i].x+slots[i].w/2)/100*rect.width;const cy=rect.top+(slots[i].y+slots[i].h/2)/100*rect.height;const angle=Math.atan2(mv.clientY-cy,mv.clientX-cx)*180/Math.PI+90;const r=Math.max(-35,Math.min(35,Math.round(angle)));slots[i].r=r;el.style.setProperty('--rot',r+'deg');syncRotateControl();return}slots[i].x=Math.max(0,Math.min(96,start.x+dx));slots[i].y=Math.max(0,Math.min(96,start.y+dy));el.style.left=slots[i].x+'%';el.style.top=slots[i].y+'%'};el.onpointerup=()=>{saveResizedSlot(el);el.onpointermove=null;el.onpointerup=null}}})}
+function saveResizedSlot(el){const rect=frameCustomPreview.getBoundingClientRect();const i=+el.dataset.index;const slots=getPreviewSlotData(state.photoCount);slots[i].w=Math.max(8,el.offsetWidth/rect.width*100);slots[i].h=Math.max(8,el.offsetHeight/rect.height*100)}
+function syncRotateControl(){if(!window.slotRotate)return;const slots=getPreviewSlotData(state.photoCount);const r=slots[state.selectedSlotIndex]?.r||0;slotRotate.value=r;rotateValue.textContent=r+'°'}
+function rotateSelectedSlot(){const slots=getPreviewSlotData(state.photoCount);const r=+slotRotate.value;rotateValue.textContent=r+'°';if(!slots[state.selectedSlotIndex])return;slots[state.selectedSlotIndex].r=r;const el=document.querySelector(`.big-slot[data-index="${state.selectedSlotIndex}"]`);if(el)el.style.setProperty('--rot',r+'deg')}
+function setEditorTab(tab){tabManual.classList.toggle('active',tab==='manual');tabUpload.classList.toggle('active',tab==='upload');manualEditor.style.display=tab==='manual'?'block':'none';uploadEditor.style.display=tab==='upload'?'block':'none'}
+function handleFrameUpload(e){const file=e.target.files[0];if(!file||!state.frameConfig)return;const r=new FileReader();r.onload=()=>{state.frameConfig.uploadedFrame=r.result;applyPreviewStyle()};r.readAsDataURL(file)}
+function removeUploadedFrame(){if(!state.frameConfig)return;state.frameConfig.uploadedFrame=null;applyPreviewStyle()}
+
+function getTemplates(){try{return JSON.parse(localStorage.getItem('ricsTemplates'))||[]}catch(e){return[]}}
+function setTemplates(items){localStorage.setItem('ricsTemplates',JSON.stringify(items))}
+function saveTemplate(){const name=prompt('Nama template?',state.frameConfig?.text||`Template ${state.photoCount} Foto`);if(!name)return;const templates=getTemplates();const item={id:Date.now(),name,createdAt:new Date().toISOString(),photoCount:state.photoCount,layoutMode:state.layoutMode,beautyLevel:state.beautyLevel,selectedStyle:state.selectedStyle,frameConfig:structuredClone(state.frameConfig),slots:structuredClone(state.customSlots[String(state.photoCount)]||getPreviewSlotData(state.photoCount))};templates.unshift(item);setTemplates(templates);alert('Template tersimpan bro 🔥');renderTemplateGallery()}
+function applyTemplate(id){const t=getTemplates().find(x=>x.id===id);if(!t)return;state.photoCount=t.photoCount;state.layoutMode=t.layoutMode||'normal';state.beautyLevel=t.beautyLevel??1;state.selectedStyle=t.selectedStyle||'soft';state.frameConfig=structuredClone(t.frameConfig);state.customSlots[String(t.photoCount)]=structuredClone(t.slots||[]);renderCounts();syncFrameForm();renderStyles();goTo('selectStyle')}
+function editTemplate(id){const t=getTemplates().find(x=>x.id===id);if(!t)return;state.photoCount=t.photoCount;state.layoutMode=t.layoutMode||'normal';state.beautyLevel=t.beautyLevel??1;state.selectedStyle=t.selectedStyle||'soft';state.frameConfig=structuredClone(t.frameConfig);state.customSlots[String(t.photoCount)]=structuredClone(t.slots||[]);renderCounts();syncFrameForm();goTo('customFrame')}
+function deleteTemplate(id){if(!confirm('Hapus template ini?'))return;setTemplates(getTemplates().filter(x=>x.id!==id));renderTemplateGallery()}
+function renderTemplateGallery(){const list=getTemplates();if(!window.templateGrid)return;if(!list.length){templateGrid.innerHTML=`<div class="empty-template"><h3>Belum ada template</h3><p>Buat frame sekali, save sebagai template, lalu nanti tinggal shoot tanpa edit ulang.</p><br><button class="btn" onclick="goTo('selectCount')">+ Buat Template Pertama</button></div>`;if(window.templatePagination)templatePagination.innerHTML='';return}const totalPages=Math.max(1,Math.ceil(list.length/TEMPLATE_PAGE_SIZE));templatePage=Math.min(templatePage,totalPages);const start=(templatePage-1)*TEMPLATE_PAGE_SIZE;const items=list.slice(start,start+TEMPLATE_PAGE_SIZE);templateGrid.innerHTML=items.map(t=>templateCardHtml(t)).join('');renderTemplatePagination(totalPages)}
+function renderTemplatePagination(totalPages){if(!window.templatePagination)return;if(totalPages<=1){templatePagination.innerHTML='';return}templatePagination.innerHTML=Array.from({length:totalPages},(_,i)=>`<button class="page-btn ${templatePage===i+1?'active':''}" onclick="templatePage=${i+1};renderTemplateGallery()">${i+1}</button>`).join('')}
+function templateCardHtml(t){const f=t.frameConfig||{};const slots=(t.slots||[]).map(s=>`<div class="thumb-slot" style="left:${s.x}%;top:${s.y}%;width:${s.w}%;height:${s.h}%;--rot:${s.r||0}deg"></div>`).join('');const img=f.uploadedFrame?`url(${f.uploadedFrame})`:'none';const title=(f.text||'').trim()?`<div class="thumb-title">${escapeHtml(f.text.trim())}</div>`:'';return`<article class="template-card"><button class="template-menu-btn" onclick="toggleTemplateMenu(event,${t.id})">☰</button><div id="templateMenu-${t.id}" class="template-dropdown"><button onclick="applyTemplate(${t.id})">Pakai</button><button onclick="editTemplate(${t.id})">Edit</button><button onclick="deleteTemplate(${t.id})">Delete</button></div><div class="template-thumb" onclick="applyTemplate(${t.id})" style="--frame-bg:${f.backgroundColor||'#fff5f8'};--frame-border:${f.borderColor||'#ff86b8'};--outer-border:${f.outerBorderColor||'transparent'};--text-color:${f.textColor||'#ff4f93'};--photo-radius:${f.photoRadius||16}px;--photo-border:${f.photoBorder||6}px;--frame-img:${img}">${slots}<div class="thumb-overlay"></div>${title}</div><div><h3>${escapeHtml(t.name)}</h3><p class="template-meta">${t.photoCount} foto • Beauty ${t.beautyLevel??1}</p></div></article>`}
+function toggleTemplateMenu(event,id){event.stopPropagation();document.querySelectorAll('.template-dropdown').forEach(el=>{if(el.id!==`templateMenu-${id}`)el.classList.remove('open')});const menu=document.getElementById(`templateMenu-${id}`);if(menu)menu.classList.toggle('open')}
+document.addEventListener('click',()=>{document.querySelectorAll('.template-dropdown').forEach(el=>el.classList.remove('open'))})
+function exportTemplates(){const data=JSON.stringify(getTemplates(),null,2);const blob=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`rics-templates-${Date.now()}.json`;a.click()}
+function importTemplates(){templateImportInput.click()}
+function handleTemplateImport(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{const incoming=JSON.parse(r.result);if(!Array.isArray(incoming))throw new Error('Invalid template file');setTemplates([...incoming,...getTemplates()]);renderTemplateGallery();alert('Template berhasil diimport')}catch(err){alert('File template tidak valid')}};r.readAsText(file)}
+function escapeHtml(str){return String(str).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+
+function selectStyle(id){if(!id)return;state.selectedStyle=id;const selectedStyle=styles.find(s=>s.id===id);if(window.selectedStyleInfo)selectedStyleInfo.textContent='Style terpilih: '+(selectedStyle?.name||id);document.querySelectorAll('.style-card').forEach(card=>card.classList.toggle('active',card.dataset.styleId===id));document.querySelectorAll('.style-preview').forEach(el=>el.classList.remove('selected'));const selected=document.querySelector(`.style-card[data-style-id="${id}"] .style-preview`);if(selected)selected.classList.add('selected')}
+function renderStyles(){styleGrid.innerHTML=styles.map(s=>`<div class="style-card ${state.selectedStyle===s.id?'active':''}" data-style-id="${s.id}" role="button" tabindex="0" aria-label="${s.name}" onclick="selectStyle('${s.id}')" ontouchstart="selectStyle('${s.id}')"><div class="style-preview ${s.css} ${state.selectedStyle===s.id?'selected':''}"><img src="${stylePhotos[s.id]}" alt="${s.name}"><div class="style-name">${s.name}</div></div><button type="button" class="style-pick-btn" onclick="event.stopPropagation();selectStyle('${s.id}')" ontouchstart="event.stopPropagation();selectStyle('${s.id}')">${state.selectedStyle===s.id?'Terpilih':'Pilih'}</button></div>`).join('');selectStyle(state.selectedStyle)}
+
+async function startCamera(){if(state.stream)return;if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert('Kamera iPad butuh HTTPS. Buka dari https://rics-photobooth.pages.dev, bukan http/local file.');return}const videoEl=document.getElementById('video');videoEl.setAttribute('playsinline','true');videoEl.setAttribute('webkit-playsinline','true');videoEl.muted=true;const constraintList=[{video:{facingMode:'user'},audio:false},{video:true,audio:false}];let lastError=null;for(const constraints of constraintList){try{const stream=await navigator.mediaDevices.getUserMedia(constraints);state.stream=stream;videoEl.srcObject=stream;await videoEl.play().catch(()=>{});return}catch(err){lastError=err;console.warn('Camera try failed:',err.name,err.message)}}alert('Camera error: '+(lastError?.name||'Unknown')+' - '+(lastError?.message||'Kamera gagal dibuka'))}
+async function restartCamera(){if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null}await startCamera()}
+async function startCaptureSequence(){state.capturedPhotos=[];renderThumbs();for(let i=0;i<state.photoCount;i++){cameraTitle.textContent=`Ambil Foto (${i+1}/${state.photoCount})`;await runCountdown(3);capturePhoto();await wait(500)}await renderFinalCanvas();goTo('result')}
+function runCountdown(sec){const el=document.getElementById('countdown');el.classList.add('active');return new Promise(res=>{let n=sec;el.textContent=n;const t=setInterval(()=>{n--;if(n<=0){clearInterval(t);el.textContent='●';setTimeout(()=>{el.classList.remove('active');res()},220)}else el.textContent=n},1000)})}
+function capturePhoto(){const c=document.createElement('canvas');c.width=video.videoWidth||1920;c.height=video.videoHeight||1080;const ctx=c.getContext('2d');ctx.translate(c.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,c.width,c.height);state.capturedPhotos.push(c.toDataURL('image/jpeg',1.0));renderThumbs()}
+function renderThumbs(){thumbs.innerHTML=state.capturedPhotos.map(src=>`<img src="${src}">`).join('');captureInfo.textContent=`${state.capturedPhotos.length} / ${state.photoCount} foto tersimpan`}
+function getLayout(count){const custom=state.customSlots[String(count)];if(custom){return custom.map(s=>({x:Math.round(s.x/100*EXPORT.baseW),y:Math.round(s.y/100*EXPORT.baseH),w:Math.round(s.w/100*EXPORT.baseW),h:Math.round(s.h/100*EXPORT.baseH),r:s.r||0}))}return[]}
+async function renderFinalCanvas(){const canvas=resultCanvas;canvas.width=EXPORT.width;canvas.height=EXPORT.height;const ctx=canvas.getContext('2d');const S=EXPORT.scale;const f=state.frameConfig;const style=styles.find(s=>s.id===state.selectedStyle)||styles[0];ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.scale(S,S);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.fillStyle=f.backgroundColor;ctx.fillRect(0,0,EXPORT.baseW,EXPORT.baseH);const slots=getLayout(state.photoCount);for(let i=0;i<slots.length;i++){const img=await loadImage(state.capturedPhotos[i]);drawPhoto(ctx,img,slots[i],f,style.canvas,state.beautyLevel)}if(f.uploadedFrame){const overlay=await loadImage(f.uploadedFrame);ctx.drawImage(overlay,0,0,EXPORT.baseW,EXPORT.baseH)}if((f.text||'').trim()){ctx.fillStyle=f.textColor;ctx.textAlign='center';ctx.font='900 62px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';ctx.fillText(f.text.trim(),600,1705)}ctx.setTransform(1,0,0,1,0,0);await updateDownloadQr()}
+function drawPhoto(ctx,img,slot,f,filter,beauty){ctx.save();ctx.translate(slot.x+slot.w/2,slot.y+slot.h/2);ctx.rotate((slot.r||0)*Math.PI/180);const sx=-slot.w/2,sy=-slot.h/2;ctx.fillStyle=f.borderColor;round(ctx,sx,sy,slot.w,slot.h,(f.photoRadius||16)+12);ctx.fill();const b=f.photoBorder||0,x=sx+b,y=sy+b,w=slot.w-b*2,h=slot.h-b*2;round(ctx,x,y,w,h,f.photoRadius||16);ctx.clip();drawLutProcessedImage(ctx,img,x,y,w,h,state.selectedStyle,beauty);ctx.restore()}
+function drawLutProcessedImage(ctx,img,x,y,w,h,styleId,beautyLevel){const temp=document.createElement('canvas');temp.width=Math.max(1,Math.round(w*EXPORT.scale));temp.height=Math.max(1,Math.round(h*EXPORT.scale));const t=temp.getContext('2d',{willReadFrequently:true});t.imageSmoothingEnabled=true;t.imageSmoothingQuality='high';const crop=getCoverCrop(img,w,h);t.drawImage(img,crop.sx,crop.sy,crop.sw,crop.sh,0,0,temp.width,temp.height);applyLutPreset(temp,styleId);if(beautyLevel>0){applyBeautyPass(temp,beautyLevel)}ctx.filter='none';ctx.drawImage(temp,x,y,w,h)}
+function applyBeautyPass(canvas,level){const t=canvas.getContext('2d');const copy=document.createElement('canvas');copy.width=canvas.width;copy.height=canvas.height;const c=copy.getContext('2d');c.drawImage(canvas,0,0);const blur=Math.min(2.8,level*.9);const alpha=[0,.14,.22,.30][level]||.14;t.save();t.globalAlpha=alpha;t.filter=`blur(${blur}px) brightness(1.04) saturate(1.02)`;t.drawImage(copy,0,0);t.restore();t.filter='none'}
+function applyLutPreset(canvas,styleId){const ctx=canvas.getContext('2d',{willReadFrequently:true});const img=ctx.getImageData(0,0,canvas.width,canvas.height);const d=img.data;for(let i=0;i<d.length;i+=4){let r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255;let out=lutColor(r,g,b,styleId);d[i]=clamp255(out[0]*255);d[i+1]=clamp255(out[1]*255);d[i+2]=clamp255(out[2]*255)}ctx.putImageData(img,0,0)}
+function lutColor(r,g,b,style){if(style==='bw'){const y=r*.299+g*.587+b*.114;y2=contrast(y,1.35)+.04;return[y2,y2,y2]}if(style==='retro'){r=contrast(r,1.16)+.07;g=contrast(g,1.08)+.025;b=contrast(b,.86)-.045;return[mix(r,g,.08),mix(g,r,.04),b*.86]}if(style==='cold'){r=contrast(r,1.08)-.04;g=contrast(g,1.06)+.015;b=contrast(b,1.18)+.09;return[r,g,b]}if(style==='soft'){r=contrast(r,.88)+.085;g=contrast(g,.88)+.085;b=contrast(b,.9)+.075;const avg=(r+g+b)/3;r=mix(r,avg,.06);g=mix(g,avg,.06);b=mix(b,avg,.06);return[r,g,b]}return[r,g,b]}
+function contrast(v,c){return (v-.5)*c+.5}
+function mix(a,b,t){return a*(1-t)+b*t}
+function clamp255(v){return Math.max(0,Math.min(255,Math.round(v)))}
+function getCoverCrop(img,w,h){const ir=img.width/img.height,sr=w/h;let sx=0,sy=0,sw=img.width,sh=img.height;if(ir>sr){sw=img.height*sr;sx=(img.width-sw)/2}else{sh=img.width/sr;sy=(img.height-sh)/2}return{sx,sy,sw,sh}}
+function round(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function cover(ctx,img,x,y,w,h){const crop=getCoverCrop(img,w,h);ctx.drawImage(img,crop.sx,crop.sy,crop.sw,crop.sh,x,y,w,h)}
+function loadImage(src){return new Promise(res=>{const img=new Image();img.onload=()=>res(img);img.crossOrigin='anonymous';img.src=src})}
+async function updateDownloadQr(){
+  qrImage.removeAttribute('src');
+  qrImage.alt='Uploading hasil foto...';
+
+  return new Promise(resolve=>{
+    resultCanvas.toBlob(async blob=>{
+      try{
+        const formData=new FormData();
+        formData.append('file',blob,`photo-${Date.now()}.jpg`);
+
+        const res=await fetch('https://photobooth-upload.setiawanriko73.workers.dev',{
+          method:'POST',
+          body:formData
+        });
+
+        if(!res.ok) throw new Error('Upload gagal: '+res.status);
+
+        const data=await res.json();
+        state.resultUrl=data.url;
+
+        qrImage.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(state.resultUrl);
+        qrImage.alt='QR Download';
+
+        if(state.printer?.autoPrint===true){
+          autoPrintToServer(state.resultUrl);
+        }
+      }catch(err){
+        console.error(err);
+        state.resultUrl=resultCanvas.toDataURL('image/jpeg',.9);
+        qrImage.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(location.href.split('#')[0]);
+        qrImage.alt='QR fallback';
+        alert('Upload ke cloud gagal. QR sementara mengarah ke halaman app. Cek Worker/R2 binding.');
+      }
+      resolve();
+    },'image/jpeg',.95);
+  });
+}
+
+async function autoPrintToServer(photoUrl){
+  const endpoint=state.printer?.printServerUrl||'http://192.168.100.221:3000/print';
+  try{
+    await fetch(endpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url:photoUrl})
+    });
+    console.log('Auto print sent:',photoUrl);
+  }catch(err){
+    console.error('Auto print gagal:',err);
+    alert('Upload berhasil, tapi auto print gagal. Pastikan laptop print server aktif dan 1 WiFi.');
+  }
+}
+function downloadResult(){
+  if(state.resultUrl && state.resultUrl.startsWith('http')){
+    window.open(state.resultUrl,'_blank');
+    return;
+  }
+  const a=document.createElement('a');
+  a.download=`rics-photobooth-HD-${Date.now()}.jpg`;
+  a.href=resultCanvas.toDataURL('image/jpeg',.98);
+  a.click();
+}
+function loadQrForPrint(url){return new Promise((resolve,reject)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>resolve(img);img.onerror=reject;img.src='https://api.qrserver.com/v1/create-qr-code/?size=360x360&data='+encodeURIComponent(url)})}
+async function makePrintCanvasWithQr(){const printCanvas=document.createElement('canvas');printCanvas.width=resultCanvas.width;printCanvas.height=resultCanvas.height;const ctx=printCanvas.getContext('2d');ctx.drawImage(resultCanvas,0,0);const qrEnabled=state.printer?.printQr!==false;if(!qrEnabled)return printCanvas;const qrUrl=(state.resultUrl&&state.resultUrl.startsWith('http'))?state.resultUrl:location.href.split('#')[0];try{const qr=await loadQrForPrint(qrUrl);const size=260;const pad=48;const x=printCanvas.width-size-pad;const y=printCanvas.height-size-pad;ctx.fillStyle='white';ctx.fillRect(x-18,y-18,size+36,size+36);ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=4;ctx.strokeRect(x-18,y-18,size+36,size+36);ctx.drawImage(qr,x,y,size,size);ctx.fillStyle='#111';ctx.font='700 28px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';ctx.textAlign='center';ctx.fillText('Scan Download',x+size/2,y+size+46)}catch(e){console.error('QR print gagal',e)}return printCanvas}
+async function printResult(){const printCanvas=await makePrintCanvasWithQr();const img=printCanvas.toDataURL('image/jpeg',.98);const w=window.open('','_blank');w.document.write(`<html><head><title>Print</title><style>@page{size:4in 6in;margin:0}html,body{margin:0;width:100%;height:100%;background:white}body{display:grid;place-items:center}img{width:4in;height:6in;object-fit:cover;display:block}</style></head><body><img src="${img}" onload="setTimeout(()=>print(),300)"></body></html>`);w.document.close()}
+function savePrinterSettings(){state.printer={mode:printerMode.value,target:printerTarget.value,printServerUrl:window.printServerUrl?printServerUrl.value.trim():'http://192.168.100.221:3000/print',autoPrint:window.autoPrintEnabled?autoPrintEnabled.checked:false,printQr:window.printQrEnabled?printQrEnabled.checked:true};localStorage.setItem('ricsPrinter',JSON.stringify(state.printer));loadPrinterSettings();alert('Setting printer tersimpan.')}
+function loadPrinterSettings(){try{state.printer=JSON.parse(localStorage.getItem('ricsPrinter'))||state.printer}catch(e){}if(window.printerMode){printerMode.value=state.printer.mode||'airprint';printerTarget.value=state.printer.target||'';if(window.printServerUrl)printServerUrl.value=state.printer.printServerUrl||'http://192.168.100.221:3000/print';if(window.autoPrintEnabled)autoPrintEnabled.checked=state.printer.autoPrint===true;if(window.printQrEnabled)printQrEnabled.checked=state.printer.printQr!==false;printerStatus.textContent=`Mode: ${printerMode.value}. Target: ${printerTarget.value||'AirPrint/browser default'}. Auto Print: ${(state.printer.autoPrint===true)?'ON':'OFF'}. QR Print: ${(state.printer.printQr!==false)?'ON':'OFF'}.`}}
+function testPrint(){window.print()}
+function setHomeTab(tab){homeTabText.classList.toggle('active',tab==='text');homeTabMedia.style.display=tab==='media'?'block':'none';homeTabMedia.classList.toggle('active',tab==='media');homeTextEditor.style.display=tab==='text'?'block':'none';homeMediaEditor.style.display=tab==='media'?'block':'none'}
+function handleHomeImage(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{state.homeMedia={type:'image',src:r.result};saveHomeMedia();applyHomeMedia()};r.readAsDataURL(file)}
+function handleHomeVideo(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{state.homeMedia={type:'video',src:r.result};saveHomeMedia();applyHomeMedia()};r.readAsDataURL(file)}
+function clearHomeMedia(){state.homeMedia=null;localStorage.removeItem('ricsHomeMedia');applyHomeMedia()}
+function saveHomeMedia(){try{localStorage.setItem('ricsHomeMedia',JSON.stringify(state.homeMedia))}catch(e){alert('File terlalu besar untuk disimpan di browser. Pakai file lebih kecil atau deploy asset di folder project.')}}
+function saveHomeText(){localStorage.setItem('ricsHomeText',JSON.stringify(state.homeText))}
+function loadHomeMedia(){try{state.homeMedia=JSON.parse(localStorage.getItem('ricsHomeMedia'))||null}catch(e){state.homeMedia=null}try{state.homeText={...state.homeText,...(JSON.parse(localStorage.getItem('ricsHomeText'))||{})}}catch(e){}applyHomeMedia();syncHomeForm();applyHomeText();enableHomeDragging()}
+function applyHomeMedia(){[homeMedia,homePreviewMedia].forEach(box=>{if(!box)return;box.innerHTML='';box.style.backgroundImage='none';if(!state.homeMedia)return;if(state.homeMedia.type==='image')box.style.backgroundImage=`url(${state.homeMedia.src})`;else box.innerHTML=`<video src="${state.homeMedia.src}" autoplay muted loop playsinline></video>`})}
+function syncHomeForm(){if(!window.homeTitleInput)return;homeTitleInput.value=state.homeText.title;homeSubtitleInput.value=state.homeText.subtitle;homeFontInput.value=state.homeText.fontFamily;homeTitleColorInput.value=state.homeText.titleColor;homeSubtitleColorInput.value=state.homeText.subtitleColor;homeButtonColorInput.value=state.homeText.buttonColor;homeTitleSizeInput.value=state.homeText.titleSize;homeSubtitleSizeInput.value=state.homeText.subtitleSize;homeButtonSizeInput.value=state.homeText.buttonSize;homeTitleSizeValue.textContent=state.homeText.titleSize+'px';homeSubtitleSizeValue.textContent=state.homeText.subtitleSize+'px';homeButtonSizeValue.textContent=state.homeText.buttonSize+'px'}
+function updateHomeText(){state.homeText.title=homeTitleInput.value;state.homeText.subtitle=homeSubtitleInput.value;state.homeText.fontFamily=homeFontInput.value;state.homeText.titleColor=homeTitleColorInput.value;state.homeText.subtitleColor=homeSubtitleColorInput.value;state.homeText.buttonColor=homeButtonColorInput.value;state.homeText.titleSize=+homeTitleSizeInput.value;state.homeText.subtitleSize=+homeSubtitleSizeInput.value;state.homeText.buttonSize=+homeButtonSizeInput.value;homeTitleSizeValue.textContent=state.homeText.titleSize+'px';homeSubtitleSizeValue.textContent=state.homeText.subtitleSize+'px';homeButtonSizeValue.textContent=state.homeText.buttonSize+'px';applyHomeText();saveHomeText()}
+function applyHomeText(){const h=state.homeText;[homeTitle,previewHomeTitle].filter(Boolean).forEach(el=>{el.textContent=h.title;el.style.color=h.titleColor;el.style.fontFamily=h.fontFamily;el.style.fontSize=h.titleSize+'px';el.style.left=h.titleX+'%';el.style.top=h.titleY+'%'});[homeSubtitle,previewHomeSubtitle].filter(Boolean).forEach(el=>{el.textContent=h.subtitle;el.style.color=h.subtitleColor;el.style.fontFamily=h.fontFamily;el.style.fontSize=h.subtitleSize+'px';el.style.left=h.subtitleX+'%';el.style.top=h.subtitleY+'%'});[homeStartBtn,previewHomeButton].filter(Boolean).forEach(el=>{el.textContent='Start →';el.style.background=h.buttonColor;el.style.fontFamily=h.fontFamily;el.style.fontSize=h.buttonSize+'px';el.style.left=h.buttonX+'%';el.style.top=h.buttonY+'%'})}
+function enableHomeDragging(){['previewHomeTitle','previewHomeSubtitle','previewHomeButton'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.onpointerdown=ev=>{state.activeHomeItem=el.dataset.homeItem;document.querySelectorAll('.home-edit-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');const rect=homeSettingsPreview.getBoundingClientRect();el.setPointerCapture(ev.pointerId);el.onpointermove=mv=>{const x=Math.max(0,Math.min(100,(mv.clientX-rect.left)/rect.width*100));const y=Math.max(0,Math.min(100,(mv.clientY-rect.top)/rect.height*100));if(state.activeHomeItem==='title'){state.homeText.titleX=x;state.homeText.titleY=y}else if(state.activeHomeItem==='subtitle'){state.homeText.subtitleX=x;state.homeText.subtitleY=y}else{state.homeText.buttonX=x;state.homeText.buttonY=y}applyHomeText();saveHomeText()};el.onpointerup=()=>{el.onpointermove=null;el.onpointerup=null}}})}
+function resetSession(){state.capturedPhotos=[];renderThumbs();goTo('standby')}
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+
+selectFrame('korean-pastel');renderCounts();renderStyles();renderTemplateGallery();loadPrinterSettings();loadHomeMedia();goTo('standby');
+</script>
+</body>
+</html>
